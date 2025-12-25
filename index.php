@@ -25,7 +25,7 @@
     <main>
         <?php
         // инициализация числовых переменных
-        $x = -10;                   // начальное значение аргумента
+        $x = 0;                   // начальное значение аргумента
         $encounting = 10000;       // количество вычисляемых значений
         $step = 2;                 // шаг изменения аргумента
         $min_value = -100;           // минимальное значение, останавливающее вычисления
@@ -51,76 +51,211 @@
         if( $type == 'E' ) 
             echo '<div style="overflow: hidden;">';
 
-        // цикл с заданным количеством итераций
-        for( $i=0; $i < $encounting; $i++, $x+=$step )
-        {
-            // вычисление значения функции согласно варианту 2
-            if( $x <= 10 )         // если аргумент меньше или равен 10
+        $cycle_type = 1; // 1 - for с break, 2 - while, 3 - do-while
+
+        if ($cycle_type == 1) {
+            //заданное количество итераций
+            for( $i=0; $i < $encounting; $i++, $x+=$step )
             {
-                if( $x == 0 )      // если аргумент равен 0 (деление на ноль)
-                    $f = 'error';  // не вычисляем функцию
-                else{              // иначе
-                    $f = (10 + $x) / $x;  // вычисляем функцию: (10+x)/x
+                // вычисление значения функции
+                if( $x <= 10 )         
+                {
+                    if( $x == 0 )      // если аргумент равен 0 (деление на ноль)
+                        $f = 'error';  // не вычисляем
+                    else{              
+                        $f = (10 + $x) / $x;  // вычисляем
+                        $f = round($f, 3);
+                    }
+                }
+                else                   
+                if( $x < 20 )          
+                {
+                    $f = $x / 7 * ($x - 2);   // вычисляем
                     $f = round($f, 3);
                 }
+                else                   // иначе (x ≥ 20)
+                {
+                    $f = $x * 8 + 2;   // вычисляем
+                    $f = round($f, 3);
+                }
+                
+                // проверка на выход за пределы диапазона
+                if( $f != 'error' )
+                {
+                    if( $f >= $max_value || $f < $min_value )  // если вышли за рамки диапазона
+                        break;                                 // закончить цикл досрочно
+                }
+                
+                // вывод в зависимости от типа верстки
+                switch ($type) {
+                    case 'A': // простая верстка текстом
+                        echo 'f(' . $x . ')=' . $f;
+                        if ($i < $encounting - 1) { // если это не последняя итерация цикла
+                            echo '<br>';            // выводим знак перевода строки
+                        }
+                        break;
+
+                    case 'B': // маркированный список
+                    case 'C': //нумерованный список
+                        echo '<li>f(' . $x . ')=' . $f . '</li>';
+                        break;
+
+                    case 'D': // табличная верстка
+                        $row_num = $i + 1;
+                        echo '<tr>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $row_num . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $x . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $f . '</td>';
+                        echo '</tr>';
+                        break;
+
+                    case 'E': // блочная верстка
+                        echo '<div style="float: left; border: 2px solid red; margin: 8px; padding: 5px;">';
+                        echo 'f(' . $x . ')=' . $f;
+                        echo '</div>';
+                        break;
+                }
+                
+                // сбор статистики (только для числовых значений)
+                if( $f != 'error' )
+                {
+                    $sum += $f;
+                    $count++;
+                    if( $f < $min_f ) $min_f = $f;
+                    if( $f > $max_f ) $max_f = $f;
+                }
             }
-            else                   // иначе
-            if( $x < 20 )          // если аргумент меньше 20
-            {
-                $f = $x / 7 * ($x - 2);   // вычисляем функцию: x/7*(x-2)
-                $f = round($f, 3);
-            }
-            else                   // иначе (x ≥ 20)
-            {
-                $f = $x * 8 + 2;   // вычисляем функцию: x*8+2
-                $f = round($f, 3);
-            }
-            
-            // проверка на выход за пределы диапазона (если значение не 'error')
-            if( $f != 'error' )
-            {
-                if( $f >= $max_value || $f < $min_value )  // если вышли за рамки диапазона
-                    break;                                 // закончить цикл досрочно
-            }
-            
-            // вывод в зависимости от типа верстки
-            switch ($type) {
-                case 'A': // простая верстка текстом
-                    echo 'f(' . $x . ')=' . $f;
-                    if ($i < $encounting - 1) { // если это не последняя итерация цикла
-                        echo '<br>';            // выводим знак перевода строки
+        }
+        elseif ($cycle_type == 2) {
+            // while с предусловием
+            $i = 0;
+            $x = 0; // сбрасываем аргумент
+            while ($i < $encounting) {
+                // вычисление значения функции
+                if( $x <= 10 ) {
+                    if( $x == 0 ) {
+                        $f = 'error';
+                    } else {              
+                        $f = (10 + $x) / $x;
+                        $f = round($f, 3);
                     }
+                } elseif( $x < 20 ) {
+                    $f = $x / 7 * ($x - 2);
+                    $f = round($f, 3);
+                } else {
+                    $f = $x * 8 + 2;
+                    $f = round($f, 3);
+                }
+                
+                // проверка на выход за пределы диапазона
+                if ($f != 'error' && ($f >= $max_value || $f < $min_value)) {
                     break;
-
-                case 'B': // маркированный список
-                case 'C': //нумерованный список
-                    echo '<li>f(' . $x . ')=' . $f . '</li>';
-                    break;
-
-                case 'D': // табличная верстка
-                    $row_num = $i + 1;
-                    echo '<tr>';
-                    echo '<td style="border: 1px solid black; text-align: center;">' . $row_num . '</td>';
-                    echo '<td style="border: 1px solid black; text-align: center;">' . $x . '</td>';
-                    echo '<td style="border: 1px solid black; text-align: center;">' . $f . '</td>';
-                    echo '</tr>';
-                    break;
-
-                case 'E': // блочная верстка
-                    echo '<div style="float: left; border: 2px solid red; margin: 8px; padding: 5px;">';
-                    echo 'f(' . $x . ')=' . $f;
-                    echo '</div>';
-                    break;
+                }
+                
+                // вывод в зависимости от типа верстки
+                switch ($type) {
+                    case 'A':
+                        echo 'f(' . $x . ')=' . $f;
+                        if ($i < $encounting - 1) {
+                            echo '<br>';
+                        }
+                        break;
+                    case 'B':
+                    case 'C':
+                        echo '<li>f(' . $x . ')=' . $f . '</li>';
+                        break;
+                    case 'D':
+                        $row_num = $i + 1;
+                        echo '<tr>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $row_num . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $x . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $f . '</td>';
+                        echo '</tr>';
+                        break;
+                    case 'E':
+                        echo '<div style="float: left; border: 2px solid red; margin: 8px; padding: 5px;">';
+                        echo 'f(' . $x . ')=' . $f;
+                        echo '</div>';
+                        break;
+                }
+                
+                // сбор статистики
+                if( $f != 'error' ) {
+                    $sum += $f;
+                    $count++;
+                    if( $f < $min_f ) $min_f = $f;
+                    if( $f > $max_f ) $max_f = $f;
+                }
+                
+                 $i++;
+                 $x += $step;
             }
-            
-            // сбор статистики (только для числовых значений)
-            if( $f != 'error' )
-            {
-                $sum += $f;
-                $count++;
-                if( $f < $min_f ) $min_f = $f;
-                if( $f > $max_f ) $max_f = $f;
-            }
+        }
+        else {
+            // do-while с постусловием
+            $i = 0;
+            $x = 0; // сбрасываем аргумент
+            do {
+                // вычисление значения функции
+                if( $x <= 10 ) {
+                    if( $x == 0 ) {
+                        $f = 'error';
+                    } else {              
+                        $f = (10 + $x) / $x;
+                        $f = round($f, 3);
+                    }
+                } elseif( $x < 20 ) {
+                    $f = $x / 7 * ($x - 2);
+                    $f = round($f, 3);
+                } else {
+                    $f = $x * 8 + 2;
+                    $f = round($f, 3);
+                }
+                
+                // проверка на выход за пределы диапазона
+                if ($f != 'error' && ($f >= $max_value || $f < $min_value)) {
+                    break;
+                }
+                
+                // вывод в зависимости от типа верстки
+                switch ($type) {
+                    case 'A':
+                        echo 'f(' . $x . ')=' . $f;
+                        if ($i < $encounting - 1) {
+                            echo '<br>';
+                        }
+                        break;
+                    case 'B':
+                    case 'C':
+                        echo '<li>f(' . $x . ')=' . $f . '</li>';
+                        break;
+                    case 'D':
+                        $row_num = $i + 1;
+                        echo '<tr>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $row_num . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $x . '</td>';
+                        echo '<td style="border: 1px solid black; text-align: center;">' . $f . '</td>';
+                        echo '</tr>';
+                        break;
+                    case 'E':
+                        echo '<div style="float: left; border: 2px solid red; margin: 8px; padding: 5px;">';
+                        echo 'f(' . $x . ')=' . $f;
+                        echo '</div>';
+                        break;
+                }
+                
+                // сбор статистики
+                if( $f != 'error' ) {
+                    $sum += $f;
+                    $count++;
+                    if( $f < $min_f ) $min_f = $f;
+                    if( $f > $max_f ) $max_f = $f;
+                }
+                
+                
+                $i++;
+                $x += $step;
+            } while ($i < $encounting);
         }
 
         // завершение вывода в зависимости от типа верстки
